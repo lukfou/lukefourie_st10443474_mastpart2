@@ -1,0 +1,81 @@
+// __tests__/AddMenuScreen.test.tsx
+import React from 'react';
+import { render, fireEvent } from '@testing-library/react-native';
+import AddMenuScreen from '../screens/AddMenuScreen';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+const Stack = createNativeStackNavigator();
+
+const mockNavigation = {
+  navigate: jest.fn(),
+};
+
+describe('AddMenuScreen', () => {
+  it('renders correctly', () => {
+    const { getByText, getByPlaceholderText } = render(
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen name="AddMenu">
+            {() => <AddMenuScreen navigation={mockNavigation} />}
+          </Stack.Screen>
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
+
+    expect(getByText('Dish Name: Tirimasu:')).toBeTruthy();
+    expect(getByPlaceholderText('Dish Name')).toBeTruthy();
+    expect(getByText('Add Dish')).toBeTruthy();
+  });
+
+  it('allows users to input dish name, description, course, and price', () => {
+    const { getByPlaceholderText, getByText } = render(
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen name="AddMenu">
+            {() => <AddMenuScreen navigation={mockNavigation} />}
+          </Stack.Screen>
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
+
+    fireEvent.changeText(getByPlaceholderText('Dish Name'), 'Tiramisù');
+    fireEvent.changeText(getByPlaceholderText('Description'), 'Delicious dessert');
+    fireEvent.changeText(getByPlaceholderText('Price'), '120');
+
+    // Verify that the inputs contain the correct values
+    expect(getByPlaceholderText('Dish Name').props.value).toBe('Tiramisù');
+    expect(getByPlaceholderText('Description').props.value).toBe('Delicious dessert');
+    expect(getByPlaceholderText('Price').props.value).toBe('120');
+  });
+
+  it('navigates to Home screen on button press with correct params', () => {
+    const { getByText, getByPlaceholderText } = render(
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen name="AddMenu">
+            {() => <AddMenuScreen navigation={mockNavigation} />}
+          </Stack.Screen>
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
+
+    // Fill the form
+    fireEvent.changeText(getByPlaceholderText('Dish Name'), 'Tiramisù');
+    fireEvent.changeText(getByPlaceholderText('Description'), 'Delicious dessert');
+    fireEvent.changeText(getByPlaceholderText('Price'), '120');
+
+    // Simulate button press
+    fireEvent.press(getByText('Add Dish'));
+
+    // Check if navigate function was called with correct parameters
+    expect(mockNavigation.navigate).toHaveBeenCalledWith('Home', {
+      newItem: {
+        dishName: 'Tiramisù',
+        description: 'Delicious dessert',
+        course: 'Starters', // Default value
+        price: 120,
+      },
+    });
+  });
+});
